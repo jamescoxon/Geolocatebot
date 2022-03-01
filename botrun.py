@@ -2,13 +2,12 @@
 # edit title command
 # update status command
 # update geolocation command
-# help
 
 import discord
 import settings
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 bot = discord.Bot()
 
@@ -17,7 +16,7 @@ a=db.getDb('db.json')
 
 archive_duration = settings.archive_duration
 guild_id = settings.guild_id
-
+status_options = ['OPEN', 'ARCHIVED', 'COMPLETE']
 
 def get_seq(incr_bool):
     sequential_count = a.getBy({"type":"seq"})
@@ -28,7 +27,7 @@ def get_seq(incr_bool):
 
     if len(sequential_count) == 0:
         print('First Run')
-        id_name = a.add({"seq":0,"type":"seq", "user":"admin", "link":"link", "status":"admin"})
+        id_name = a.add({"seq":0,"type":"seq", "user":"admin", "link":"link", "status":"admin", "title":"admin", "thread_id":0})
 
     else:
         sequence = int(sequential_count[0]['seq'])
@@ -60,13 +59,69 @@ async def add_command(ctx, link: str = None):
         await ctx.respond('Error - no link')
     else:
         seq = get_seq(True)
-
-        id_name = a.add({"user":name,"type":"link","link": link, "status":"OPEN", "seq":int(seq)})
+        title = '{}_{}'.format(seq, 'uuid')
 
         message = await ctx.send("Here is a research thread: #{} for {} setup by @{}".format(seq, link, name))
-        await message.create_thread(name='#{}'.format(seq), auto_archive_duration=archive_duration)
+        thread_info = await message.create_thread(name='#{}'.format(title), auto_archive_duration=archive_duration)
+
+        print(thread_info.id)
+        id_name = a.add({"user":name,"type":"link","link": link, "status":"OPEN", "seq":int(seq), "title":title, "thread_id": thread_info.id})
 
         await ctx.respond('Thanks {}'.format(name))
+
+####### UPDATE_TITLE
+@bot.slash_command(
+    name="update_title",
+    description="Update geolocation database",
+    guild_ids=[guild_id]
+)
+async def update_title_command(ctx, new_title: str =None):
+    name = ctx.author.name
+
+    new_title = new_title.replace(" ", "_")
+
+    title = str(ctx.channel)
+    details = a.getBy({"title": title })
+    if len(details) == 0:
+        return
+
+    print(details[0]['thread_id'])
+    thread_details = bot.get_channel(int(details[0]['thread_id']))
+    print(thread_details.id)
+    print(thread_details.type)
+    if str(thread_details.type) == 'public_thread':
+        await thread_details.edit(name='#{}_{}'.format(details[0]['seq'], new_title))
+
+        seq = details[0]['seq']
+        update_title = '{}_{}'.format(seq, new_title)
+        a.updateById(details[0]['id'], {"title":update_title})
+        await ctx.respond('Thanks {}'.format(name))
+
+####### UPDATE_STATUS
+@bot.slash_command(
+    name="update_status",
+    description="Update geolocation database",
+    guild_ids=[guild_id]
+)
+async def update_status_command(ctx, new_status: str =None):
+    name = ctx.author.name
+
+    title = str(ctx.channel)
+    print(title)
+    details = a.getBy({"title": title })
+    if len(details) == 0:
+        return
+
+    thread_details = bot.get_channel(int(details[0]['thread_id']))
+    print(thread_details.id)
+    print(thread_details.type)
+    if str(thread_details.type) == 'public_thread':
+        if new_status.upper() in status_options:
+            a.updateById(details[0]['id'], {"status":new_status.upper()})
+            await ctx.respond('Thanks {}'.format(name))
+        else:
+            await ctx.respond('Error - incorrect status, options are {}'.format(status_options))
+
 
 ####### LIST
 @bot.slash_command(
