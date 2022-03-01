@@ -6,14 +6,17 @@
 
 import discord
 import settings
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 bot = discord.Bot()
 
 from pysondb import db
 a=db.getDb('db.json')
 
-archive_duration = 1440
-guild_id = 947954303438573638
+archive_duration = settings.archive_duration
+guild_id = settings.guild_id
 
 
 def get_seq(incr_bool):
@@ -35,12 +38,22 @@ def get_seq(incr_bool):
     print('Seq: {}'.format(sequence))
     return int(sequence)
 
+####### HELP
+@bot.slash_command(
+    name="help",
+    description="Help Description",
+    guild_ids=[guild_id]
+)
+async def help_command(ctx):
+        await ctx.respond('Help\n Commands:\nAdd New Project: `/add <research link>` e.g. twitter or imgur link\nList Current Projects: `/list` ')
+
+####### ADD
 @bot.slash_command(
     name="add",
     description="Add link to database",
     guild_ids=[guild_id]
 )
-async def hello(ctx, link: str = None):
+async def add_command(ctx, link: str = None):
     name = ctx.author.name
 
     if link == None:
@@ -55,6 +68,7 @@ async def hello(ctx, link: str = None):
 
         await ctx.respond('Thanks {}'.format(name))
 
+####### LIST
 @bot.slash_command(
     name="list",
     description="list database",
@@ -63,7 +77,7 @@ async def hello(ctx, link: str = None):
 async def list_command(ctx):
     all_db = a.getAll()
     print(all_db)
-    if len(all_db) <= 1: 
+    if len(all_db) <= 1:
         print('Empty DB')
         await ctx.respond('Empty DB')
 
