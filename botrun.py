@@ -6,6 +6,7 @@
 import discord
 import settings
 import logging
+import sys
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -16,6 +17,11 @@ a=db.getDb('db.json')
 
 archive_duration = settings.archive_duration
 guild_id = settings.guild_id
+
+if guild_id == 0 or settings.bot_token == '':
+    print('Error - please update settings.py')
+    sys.exit()
+
 status_options = ['OPEN', 'ARCHIVED', 'COMPLETE']
 
 def get_seq(incr_bool):
