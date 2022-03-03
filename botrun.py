@@ -67,6 +67,11 @@ async def add_command(ctx, link: str = None):
         seq = get_seq(True)
         title = '{}_{}'.format(seq, 'uuid')
 
+        details = a.getBy({"link": link })
+        if len(details) > 0:
+            await ctx.respond('Error - this link is already being researched')
+            return
+
         message = await ctx.send("Here is a research thread: #{} for {} setup by @{}".format(seq, link, name))
         thread_info = await message.create_thread(name='#{}'.format(title), auto_archive_duration=archive_duration)
 
