@@ -146,7 +146,7 @@ async def update_status_command(ctx, new_status: str =None):
     description="list database",
     guild_ids=[guild_id]
 )
-async def list_command(ctx):
+async def list_open_command(ctx):
     all_db = a.getAll()
     print(all_db)
     if len(all_db) <= 1:
@@ -158,7 +158,7 @@ async def list_command(ctx):
         for entry in all_db:
             print(entry['type'])
             if entry['type'] == "link" and entry['status'] == 'OPEN':
-                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: https://discord.com/channels/{}/{}, {}, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
+                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
         await ctx.respond('{}'.format(response), delete_after=60)
@@ -169,7 +169,7 @@ async def list_command(ctx):
     description="list database",
     guild_ids=[guild_id]
 )
-async def list_command(ctx):
+async def list_all_command(ctx):
     all_db = a.getAll()
     print(all_db)
     if len(all_db) <= 1:
@@ -181,7 +181,7 @@ async def list_command(ctx):
         for entry in all_db:
             print(entry['type'])
             if entry['type'] == "link":
-                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: https://discord.com/channels/{}/{}, {}, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
+                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
         await ctx.respond('{}'.format(response), delete_after=60)
