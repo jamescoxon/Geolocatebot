@@ -130,6 +130,12 @@ async def update_status_command(ctx, new_status: str =None):
         if new_status.upper() in status_options:
             a.updateById(details[0]['id'], {"status":new_status.upper()})
             await ctx.respond('Thanks {}'.format(name))
+
+            if new_status.upper() == 'COMPLETE':
+                update_title = '{}_{}'.format(details[0]['title'], 'COMPLETE')
+                await thread_details.edit(name='#{}'.format(update_title))
+                a.updateById(details[0]['id'], {"title":update_title})
+
         else:
             await ctx.respond('Error - incorrect status, options are {}'.format(status_options))
 
