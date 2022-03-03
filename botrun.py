@@ -134,9 +134,32 @@ async def update_status_command(ctx, new_status: str =None):
             await ctx.respond('Error - incorrect status, options are {}'.format(status_options))
 
 
-####### LIST
+####### LIST_OPEN
 @bot.slash_command(
-    name="list",
+    name="list_open",
+    description="list database",
+    guild_ids=[guild_id]
+)
+async def list_command(ctx):
+    all_db = a.getAll()
+    print(all_db)
+    if len(all_db) <= 1:
+        print('Empty DB')
+        await ctx.respond('Empty DB')
+
+    else:
+        response = ""
+        for entry in all_db:
+            print(entry['type'])
+            if entry['type'] == "link" and entry['status'] == 'OPEN':
+                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: https://discord.com/channels/{}/{}, {}, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
+
+        print(response)
+        await ctx.respond('{}'.format(response), delete_after=60)
+
+####### LIST_ALL
+@bot.slash_command(
+    name="list_all",
     description="list database",
     guild_ids=[guild_id]
 )
@@ -152,10 +175,10 @@ async def list_command(ctx):
         for entry in all_db:
             print(entry['type'])
             if entry['type'] == "link":
-                response = '{}\n#{}: {}, {}'.format(response, entry['seq'],  entry['link'], entry['status'])
+                response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: https://discord.com/channels/{}/{}, {}, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
-        await ctx.respond('{}'.format(response))
+        await ctx.respond('{}'.format(response), delete_after=60)
 
 get_seq(False)
 
