@@ -4,6 +4,7 @@ A simple discord bot which allows you to organise OSINT research into threads, h
 ### Install Requirements
 * pycord 2.0 -  https://github.com/Pycord-Development/pycord
 * pysondb - https://github.com/pysonDB/pysonDB
+* shortuuid
 
 ### Installation
 * copy `settings.py.example` to `settings.py`

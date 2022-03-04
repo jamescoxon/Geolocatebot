@@ -7,6 +7,8 @@ import discord
 import settings
 import logging
 import sys
+import time
+import shortuuid
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,7 +35,7 @@ def get_seq(incr_bool):
 
     if len(sequential_count) == 0:
         print('First Run')
-        id_name = a.add({"seq":0,"type":"seq", "user":"admin", "link":"link", "status":"admin", "title":"admin", "thread_id":0})
+        id_name = a.add({"seq":0,"type":"seq", "user":"admin", "link":"link", "status":"admin", "title":"admin", "thread_id":0, "time" : int(time.time()), "uuid" : '0'})
 
     else:
         sequence = int(sequential_count[0]['seq'])
@@ -65,7 +67,8 @@ async def add_command(ctx, link: str = None):
         await ctx.respond('Error - no link')
     else:
         seq = get_seq(True)
-        title = '{}_{}'.format(seq, 'uuid')
+        uuid = shortuuid.uuid()
+        title = '{}_{}'.format(seq, uuid)
 
         details = a.getBy({"link": link })
         if len(details) > 0:
@@ -76,7 +79,7 @@ async def add_command(ctx, link: str = None):
         thread_info = await message.create_thread(name='#{}'.format(title), auto_archive_duration=archive_duration)
 
         print(thread_info.id)
-        id_name = a.add({"user":name,"type":"link","link": link, "status":"OPEN", "seq":int(seq), "title":title, "thread_id": thread_info.id})
+        id_name = a.add({"user":name,"type":"link","link": link, "status":"OPEN", "seq":int(seq), "title":title, "thread_id": thread_info.id, "time" : int(time.time()), "uuid" : uuid})
 
         await ctx.respond('Thanks {}'.format(name))
 
@@ -133,7 +136,12 @@ async def update_status_command(ctx, new_status: str =None):
 
             if new_status.upper() == 'COMPLETE':
                 update_title = '{}_{}'.format(details[0]['title'], 'COMPLETE')
-                await thread_details.edit(name='#{}'.format(update_title))
+                await thread_details.edit(archived = True, name='#{}'.format(update_title))
+                a.updateById(details[0]['id'], {"title":update_title})
+
+            if new_status.upper() == 'ARCHIVED':
+                update_title = '{}_{}'.format(details[0]['title'], 'ARCHIVED')
+                await thread_details.edit(archived = True, name='#{}'.format(update_title))
                 a.updateById(details[0]['id'], {"title":update_title})
 
         else:
@@ -180,7 +188,7 @@ async def list_all_command(ctx):
         response = ""
         for entry in all_db:
             print(entry['type'])
-            if entry['type'] == "link":
+            if entry['type'] == "link" and int(entry['time']) + 86400 > int(time.time()):
                 response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
