@@ -72,7 +72,7 @@ async def add_command(ctx, link: str = None):
 
         details = a.getBy({"link": link })
         if len(details) > 0:
-            await ctx.respond('Error - this link is already being researched')
+            await ctx.respond('Error - this link is already being researched: <https://discord.com/channels/{}/{}>'.format(guild_id, details[0]['thread_id']))
             return
 
         message = await ctx.send("Here is a research thread: #{} for {} setup by @{}".format(seq, link, name))
