@@ -9,6 +9,7 @@ import logging
 import sys
 import time
 import shortuuid
+import re
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,6 +20,14 @@ a=db.getDb('db.json')
 
 archive_duration = settings.archive_duration
 guild_id = settings.guild_id
+
+regex = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+#        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 if guild_id == 0 or settings.bot_token == '':
     print('Error - please update settings.py')
@@ -66,6 +75,13 @@ async def add_command(ctx, link: str = None):
     if link == None:
         await ctx.respond('Error - no link')
     else:
+        if re.match(regex, link) is  None:
+            await ctx.respond('Error - malformed link')
+            return
+        if len(link) > 72:
+            await ctx.respond('Error - link to long')
+            return
+
         seq = get_seq(True)
         uuid = shortuuid.uuid()
         title = '{}_{}'.format(seq, uuid)
@@ -142,6 +158,12 @@ async def update_status_command(ctx, new_status: str =None):
             if new_status.upper() == 'ARCHIVED':
                 update_title = '{}_{}'.format(details[0]['title'], 'ARCHIVED')
                 await thread_details.edit(archived = True, name='#{}'.format(update_title))
+                a.updateById(details[0]['id'], {"title":update_title})
+
+            if new_status.upper() == 'OPEN':
+                update_title = '{}'.format(details[0]['title'].replace('_ARCHIVED', ''))
+                update_title = '{}'.format(details[0]['title'].replace('_COMPLETE', ''))
+                await thread_details.edit(archived = False, name='#{}'.format(update_title))
                 a.updateById(details[0]['id'], {"title":update_title})
 
         else:
