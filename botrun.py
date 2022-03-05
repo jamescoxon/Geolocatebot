@@ -1,7 +1,3 @@
-# TODO
-# edit title command
-# update status command
-# update geolocation command
 
 from pysondb import db
 import discord
@@ -180,7 +176,7 @@ async def update_status_command(ctx, new_status: str = None):
     if str(thread_details.type) == 'public_thread':
         if new_status.upper() in status_options:
             a.updateById(details[0]['id'], {"status": new_status.upper()})
-            await ctx.respond('Thanks {}'.format(name))
+            await ctx.respond('Thanks {}'.format(name), ephemeral=True)
 
             if new_status.upper() == 'COMPLETE':
                 update_title = '{}_{}'.format(details[0]['title'], 'COMPLETE')
@@ -222,10 +218,9 @@ async def list_open_command(ctx):
     else:
         response = ""
         for entry in all_db:
-            print(entry['type'])
             if entry['type'] == "link" and entry['status'] == 'OPEN':
-                response = '{}\n\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(
-                    response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
+                response = '{}\n----------\n`{}`: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(
+                    response, entry['title'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
         await ctx.respond('{}'.format(response), delete_after=60, ephemeral=True)
@@ -248,11 +243,10 @@ async def list_all_command(ctx):
     else:
         response = ""
         for entry in all_db:
-            print(entry['type'])
             if entry['type'] == "link" and int(
                     entry['time']) + 86400 > int(time.time()):
-                response = '{}\n\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(
-                    response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
+                response = '{}\n----------\n`{}`: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(
+                    response, entry['title'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
         await ctx.respond('{}'.format(response), delete_after=60, ephemeral=True)
