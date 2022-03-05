@@ -61,7 +61,13 @@ def get_seq(incr_bool):
     guild_ids=[guild_id]
 )
 async def help_command(ctx):
-        await ctx.respond('Help\n Commands:\nAdd New Project: `/add <research link>` e.g. twitter or imgur link\nList Current Projects: `/list` ')
+        await ctx.respond("Help - a bot to help organise research, when a new source link is add the bot makes a new thread allowing groups to work on geolocating and fact checking together\n"
+                            "Commands:\n"
+                            "Add New Research Thread: `/add <research link>` e.g. twitter or imgur link\n"
+                            "List Open Research Threads: `/list_open`\n"
+                            "List all Research Threads: `/list_all`\n"
+                            "Update Thread Title: `/update_title <title>` only works inside a thread\n"
+                            "Update Thread Status: `/update_status <status>` options: OPEN, ARCHIVED, COMPLETE, only works inside a thread", ephemeral=True)
 
 ####### ADD
 @bot.slash_command(
@@ -73,13 +79,13 @@ async def add_command(ctx, link: str = None):
     name = ctx.author.name
 
     if link == None:
-        await ctx.respond('Error - no link')
+        await ctx.respond('Error - no link', ephemeral=True)
     else:
         if re.match(regex, link) is  None:
-            await ctx.respond('Error - malformed link')
+            await ctx.respond('Error - malformed link', ephemeral=True)
             return
-        if len(link) > 72:
-            await ctx.respond('Error - link to long')
+        if len(link) > 256:
+            await ctx.respond('Error - link to long', ephemeral=True)
             return
 
         seq = get_seq(True)
@@ -97,7 +103,7 @@ async def add_command(ctx, link: str = None):
         print(thread_info.id)
         id_name = a.add({"user":name,"type":"link","link": link, "status":"OPEN", "seq":int(seq), "title":title, "thread_id": thread_info.id, "time" : int(time.time()), "uuid" : uuid})
 
-        await ctx.respond('Thanks {}'.format(name))
+        await ctx.respond('Thanks {}'.format(name), ephemeral=True)
 
 ####### UPDATE_TITLE
 @bot.slash_command(
@@ -125,7 +131,7 @@ async def update_title_command(ctx, new_title: str =None):
         seq = details[0]['seq']
         update_title = '{}_{}'.format(seq, new_title)
         a.updateById(details[0]['id'], {"title":update_title})
-        await ctx.respond('Thanks {}'.format(name))
+        await ctx.respond('Thanks {}'.format(name), ephemeral=True)
 
 ####### UPDATE_STATUS
 @bot.slash_command(
@@ -167,7 +173,7 @@ async def update_status_command(ctx, new_status: str =None):
                 a.updateById(details[0]['id'], {"title":update_title})
 
         else:
-            await ctx.respond('Error - incorrect status, options are {}'.format(status_options))
+            await ctx.respond('Error - incorrect status, options are {}'.format(status_options), ephemeral=True)
 
 
 ####### LIST_OPEN
@@ -191,7 +197,7 @@ async def list_open_command(ctx):
                 response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
-        await ctx.respond('{}'.format(response), delete_after=60)
+        await ctx.respond('{}'.format(response), delete_after=60, ephemeral=True)
 
 ####### LIST_ALL
 @bot.slash_command(
@@ -214,7 +220,7 @@ async def list_all_command(ctx):
                 response = '{}\n\*\*\*\*\*\*\*\*\*\*\*\*\*\n#{}: <https://discord.com/channels/{}/{}>, <{}>, {}'.format(response, entry['seq'], guild_id, entry['thread_id'], entry['link'], entry['status'])
 
         print(response)
-        await ctx.respond('{}'.format(response), delete_after=60)
+        await ctx.respond('{}'.format(response), delete_after=60, ephemeral=True)
 
 get_seq(False)
 
