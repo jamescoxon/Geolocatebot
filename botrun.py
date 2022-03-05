@@ -98,13 +98,23 @@ async def add_command(ctx, link: str = None):
             await ctx.respond('Error - link to long', ephemeral=True)
             return
 
+        if 'https://twitter.com' in link:
+            if '?s=' in link:
+                remove_parameters = link.split('?s=')
+                split_link = remove_parameters[0].split('/')
+            else:
+                split_link = link.split('/')
+
+            if len(split_link) > 5:
+                link =  'https://twitter.com/' + split_link[3] + '/' + split_link[4] + '/' + split_link[5]
+
         seq = get_seq(True)
         uuid = shortuuid.uuid()
         title = '{}_{}'.format(seq, uuid)
 
         details = a.getBy({"link": link})
         if len(details) > 0:
-            await ctx.respond('Error - this link is already being researched: <https://discord.com/channels/{}/{}>'.format(guild_id, details[0]['thread_id']))
+            await ctx.respond('Error - this link is already being researched: <https://discord.com/channels/{}/{}>'.format(guild_id, details[0]['thread_id']), ephemeral=True)
             return
 
         message = await ctx.send("Here is a research thread: #{} for {} setup by @{}".format(seq, link, name))
